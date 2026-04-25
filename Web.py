@@ -45,7 +45,7 @@ default_values = {
     'VMI_DL_45': 0.626165,
     'IC_DL_121': 2.349622,
     'Zeff_wavelet-LLH_gldm_LargeDependenceLowGrayLevelEmphasis': 1.729691,
-    'VMI_DL_139': 1.466549,
+    'VMI_DL_139': 0.466549,
     'Zeff_DL_137': 1.65199,
     'IC_wavelet-LHL_firstorder_Skewness': 0.684704,
     'Zeff_wavelet-LHH_glcm_Idn': 3.454122,
@@ -53,9 +53,9 @@ default_values = {
     'VMI_wavelet-HHH_glcm_Correlation': 12.209791,
     'PEI_wavelet-LLH_glszm_SmallAreaEmphasis': 7.412239,
     'IC_wavelet-LLL_glszm_SizeZoneNonUniformity': 4.892986,
-    'PEI_DL_243': 1.086998,
-    'Histological grade': 2,
-    'Clinical T stage': 0
+    'PEI_DL_243': 1.844251,
+    'Histological grade': 1,
+    'Clinical T stage': 1
 }
 
 # ===============================
