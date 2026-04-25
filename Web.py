@@ -35,13 +35,37 @@ feature_label = [
 ]
 
 # ===============================
-# 3. Streamlit page setting
+# 3. Default values
+# ===============================
+default_values = {
+    'IC_DL_57': 1.956566,
+    'VMI_original_glszm_SmallAreaHighGrayLevelEmphasis': 1.775329,
+    'IC_wavelet-LLH_glszm_ZoneEntropy': 3.246436,
+    'Zeff_DL_91': -0.0617,
+    'VMI_DL_45': 0.626165,
+    'IC_DL_121': 2.349622,
+    'Zeff_wavelet-LLH_gldm_LargeDependenceLowGrayLevelEmphasis': 1.729691,
+    'VMI_DL_139': 1.466549,
+    'Zeff_DL_137': 1.65199,
+    'IC_wavelet-LHL_firstorder_Skewness': 0.684704,
+    'Zeff_wavelet-LHH_glcm_Idn': 3.454122,
+    'VMI_wavelet-LLH_glrlm_GrayLevelNonUniformity': 1.927121,
+    'VMI_wavelet-HHH_glcm_Correlation': 12.209791,
+    'PEI_wavelet-LLH_glszm_SmallAreaEmphasis': 7.412239,
+    'IC_wavelet-LLL_glszm_SizeZoneNonUniformity': 4.892986,
+    'PEI_DL_243': 1.086998,
+    'Histological grade': 2,
+    'Clinical T stage': 0
+}
+
+# ===============================
+# 4. Streamlit page setting
 # ===============================
 st.title('Web Predictor for Occult LNM in Patients with HNSCC')
 st.sidebar.header('Input Features')
 
 # ===============================
-# 4. Input features
+# 5. Input features
 # ===============================
 inputs = {}
 
@@ -70,15 +94,19 @@ for feature in continuous_features:
         label=feature,
         min_value=-100.0,
         max_value=100.0,
-        value=0.0,
-        step=0.01
+        value=float(default_values[feature]),
+        step=0.01,
+        format="%.6f"
     )
 
 # Categorical clinical feature 1:
 # Histological grade: 0 Well, 1 Moderate, 2 Poor
+histological_options = ['Well', 'Moderate', 'Poor']
+
 histological_grade = st.sidebar.selectbox(
     'Histological grade',
-    options=['Well', 'Moderate', 'Poor']
+    options=histological_options,
+    index=int(default_values['Histological grade'])
 )
 
 if histological_grade == 'Well':
@@ -90,9 +118,12 @@ else:
 
 # Categorical clinical feature 2:
 # Clinical T stage: 0 T1-2, 1 T3-4
+clinical_t_options = ['T1-2', 'T3-4']
+
 clinical_t_stage = st.sidebar.selectbox(
     'Clinical T stage',
-    options=['T1-2', 'T3-4']
+    options=clinical_t_options,
+    index=int(default_values['Clinical T stage'])
 )
 
 if clinical_t_stage == 'T1-2':
@@ -107,7 +138,7 @@ input_df = pd.DataFrame([inputs])
 input_df = input_df[feature_label]
 
 # ===============================
-# 5. Prediction
+# 6. Prediction
 # ===============================
 if st.sidebar.button('Predict'):
     try:
@@ -117,10 +148,19 @@ if st.sidebar.button('Predict'):
         prediction = model_xgb.predict(input_data)[0]
 
         st.subheader('Predicted Possibility of Occult LNM')
-        st.write(f'Predicted Value: {prediction:.4f}')
+
+        # Red predicted value
+        st.markdown(
+            f"""
+            <p style="color:red; font-size:24px; font-weight:bold;">
+                Predicted Value: {prediction:.4f}
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
 
         # ===============================
-        # 6. SHAP explanation
+        # 7. SHAP explanation
         # ===============================
         st.subheader('SHAP Force Plot')
 
