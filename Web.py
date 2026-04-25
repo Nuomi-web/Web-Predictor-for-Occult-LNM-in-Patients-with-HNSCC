@@ -152,12 +152,14 @@ if st.sidebar.button('Predict'):
         # Red predicted value
         st.markdown(
             f"""
-            <p style="color:red; font-size:24px; font-weight:bold;">
-                Predicted Value: {prediction:.4f}
+            <p style="font-size:24px; font-weight:bold;">
+                Predicted Value: 
+                <span style="color:red;">{prediction:.4f}</span>
             </p>
             """,
             unsafe_allow_html=True
         )
+
 
         # ===============================
         # 7. SHAP explanation
