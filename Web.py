@@ -147,13 +147,11 @@ if st.sidebar.button('Predict'):
 
         prediction = model_xgb.predict(input_data)[0]
 
-        st.subheader('Predicted Possibility of Occult LNM')
-
         # Red predicted value
         st.markdown(
             f"""
             <p style="font-size:24px; font-weight:bold;">
-                Predicted Value: 
+                Predicted probability of occult LNM; Predicted probability:  
                 <span style="color:red;">{prediction:.4f}</span>
             </p>
             """,
