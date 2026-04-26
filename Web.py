@@ -6,12 +6,12 @@ import xgboost as xgb
 import matplotlib.pyplot as plt
 
 # ===============================
-# 1. Load XGBoost model
+# 1. Load model
 # ===============================
 model_xgb = joblib.load('XGBoost.pkl')
 
 # ===============================
-# 2. Feature names
+# 2. Feature names shown on web page
 # ===============================
 feature_label = [
     'IC_DL_57',
@@ -59,7 +59,7 @@ default_values = {
 }
 
 # ===============================
-# 4. Streamlit page setting
+# 4. Streamlit page
 # ===============================
 st.title('Web Predictor for Occult LNM in Patients with HNSCC')
 st.sidebar.header('Input Features')
@@ -69,7 +69,6 @@ st.sidebar.header('Input Features')
 # ===============================
 inputs = {}
 
-# Continuous imaging/radiomics/deep learning features
 continuous_features = [
     'IC_DL_57',
     'VMI_original_glszm_SmallAreaHighGrayLevelEmphasis',
@@ -89,6 +88,7 @@ continuous_features = [
     'PEI_DL_243'
 ]
 
+# Continuous variables
 for feature in continuous_features:
     inputs[feature] = st.sidebar.number_input(
         label=feature,
@@ -99,8 +99,12 @@ for feature in continuous_features:
         format="%.6f"
     )
 
-# Categorical clinical feature 1:
-# Histological grade: 0 Well, 1 Moderate, 2 Poor
+# ===============================
+# Histological grade
+# 0: Well
+# 1: Moderate
+# 2: Poor
+# ===============================
 histological_options = ['Well', 'Moderate', 'Poor']
 
 histological_grade = st.sidebar.selectbox(
@@ -109,15 +113,19 @@ histological_grade = st.sidebar.selectbox(
     index=int(default_values['Histological grade'])
 )
 
-if histological_grade == 'Well':
-    inputs['Histological grade'] = 0
-elif histological_grade == 'Moderate':
-    inputs['Histological grade'] = 1
-else:
-    inputs['Histological grade'] = 2
+histological_map = {
+    'Well': 0,
+    'Moderate': 1,
+    'Poor': 2
+}
 
-# Categorical clinical feature 2:
-# Clinical T stage: 0 T1-2, 1 T3-4
+inputs['Histological grade'] = histological_map[histological_grade]
+
+# ===============================
+# Clinical T stage
+# 0: T1-2
+# 1: T3-4
+# ===============================
 clinical_t_options = ['T1-2', 'T3-4']
 
 clinical_t_stage = st.sidebar.selectbox(
@@ -126,38 +134,59 @@ clinical_t_stage = st.sidebar.selectbox(
     index=int(default_values['Clinical T stage'])
 )
 
-if clinical_t_stage == 'T1-2':
-    inputs['Clinical T stage'] = 0
-else:
-    inputs['Clinical T stage'] = 1
+clinical_t_map = {
+    'T1-2': 0,
+    'T3-4': 1
+}
+
+inputs['Clinical T stage'] = clinical_t_map[clinical_t_stage]
 
 # Convert input values into DataFrame
 input_df = pd.DataFrame([inputs])
 
-# Ensure the feature order is exactly the same as training
+# Ensure the order is exactly the same as training
 input_df = input_df[feature_label]
+
+# ===============================
+# Optional: show input data
+# ===============================
+# st.write(input_df)
 
 # ===============================
 # 6. Prediction
 # ===============================
 if st.sidebar.button('Predict'):
     try:
-        # XGBoost native Booster requires DMatrix
-        input_data = xgb.DMatrix(input_df)
+        # -------------------------------------------------
+        # Important:
+        # The model was trained with feature names:
+        # ['a', 'b', ..., 'r']
+        #
+        # Here we use input_df.values to remove feature names,
+        # and validate_features=False to bypass name checking.
+        #
+        # This requires that the feature order is exactly the same
+        # as in the training data.
+        # -------------------------------------------------
 
-        prediction = model_xgb.predict(input_data)[0]
+        input_data = xgb.DMatrix(input_df.values)
 
-        # Red predicted value
+        prediction = model_xgb.predict(
+            input_data,
+            validate_features=False
+        )[0]
+
+        st.subheader('Predicted probability of occult LNM')
+
         st.markdown(
             f"""
             <p style="font-size:24px; font-weight:bold;">
-                Predicted probability of occult LNM; Predicted probability:  
-                <span style="color:red;">{prediction:.4f}</span>
+                Predicted probability:
+                <span style="color:red;">{prediction:.6f}</span>
             </p>
             """,
             unsafe_allow_html=True
         )
-
 
         # ===============================
         # 7. SHAP explanation
@@ -165,7 +194,9 @@ if st.sidebar.button('Predict'):
         st.subheader('SHAP Force Plot')
 
         explainer = shap.TreeExplainer(model_xgb)
-        shap_values = explainer.shap_values(input_df)
+
+        # Use values only to avoid feature name mismatch in SHAP
+        shap_values = explainer.shap_values(input_df.values)
 
         plt.figure()
 
@@ -182,7 +213,7 @@ if st.sidebar.button('Predict'):
         plt.savefig(
             "shap_force_plot.png",
             bbox_inches='tight',
-            dpi=1200
+            dpi=300
         )
 
         plt.close()
