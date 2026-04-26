@@ -147,27 +147,10 @@ input_df = pd.DataFrame([inputs])
 # Ensure the order is exactly the same as training
 input_df = input_df[feature_label]
 
-# ===============================
-# Optional: show input data
-# ===============================
-# st.write(input_df)
-
-# ===============================
 # 6. Prediction
 # ===============================
 if st.sidebar.button('Predict'):
     try:
-        # -------------------------------------------------
-        # Important:
-        # The model was trained with feature names:
-        # ['a', 'b', ..., 'r']
-        #
-        # Here we use input_df.values to remove feature names,
-        # and validate_features=False to bypass name checking.
-        #
-        # This requires that the feature order is exactly the same
-        # as in the training data.
-        # -------------------------------------------------
 
         input_data = xgb.DMatrix(input_df.values)
 
@@ -180,7 +163,7 @@ if st.sidebar.button('Predict'):
 
         st.markdown(
             f"""
-            <p style="font-size:24px; font-weight:bold;">
+            <p style="font-size:18px; font-weight:bold;">
                 Predicted probability:
                 <span style="color:red;">{prediction:.6f}</span>
             </p>
@@ -206,7 +189,7 @@ if st.sidebar.button('Predict'):
             input_df.iloc[0, :],
             feature_names=feature_label,
             matplotlib=True,
-            contribution_threshold=0.1,
+            contribution_threshold=0.01,
             show=False
         )
 
